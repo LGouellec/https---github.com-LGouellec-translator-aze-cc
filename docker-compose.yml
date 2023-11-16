@@ -1,0 +1,81 @@
+---
+version: '2'
+services:
+  producer-aze:
+    image: local_kafka_client
+    hostname: producer-aze
+    container_name: producer-aze
+    environment:
+      PRODUCER_CONNECTION: AZURE_EVENT_HUB
+      TYPE_KAFKA: producer
+      KAFKA_TOPIC: mock-topic
+  consumer-aze:
+    image: local_kafka_client
+    hostname: consumer-aze
+    container_name: consumer-aze
+    environment:
+      CONSUMER_CONNECTION: AZURE_EVENT_HUB
+      TYPE_KAFKA: consumer
+      KAFKA_TOPIC: mock-topic
+  producer-ccloud:
+    image: local_kafka_client
+    hostname: producer-ccloud
+    container_name: producer-ccloud
+    environment:
+      PRODUCER_CONNECTION: CONFLUENT_CLOUD
+      TYPE_KAFKA: producer
+      KAFKA_TOPIC: mock-topic
+  consumer-ccloud:
+    image: local_kafka_client
+    hostname: consumer-ccloud
+    container_name: consumer-ccloud
+    environment:
+      CONSUMER_CONNECTION: CONFLUENT_CLOUD
+      TYPE_KAFKA: consumer
+      KAFKA_TOPIC: mock-topic
+  connect:
+    image: local_connect_aze_cc
+    hostname: connect
+    container_name: connect
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./connect/properties:/etc/kafka/custom-properties
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: ${BOOTSTRAP_SERVERS}
+      CONNECT_GROUP_ID: "connect"
+      CONNECT_CONFIG_STORAGE_TOPIC: mycluster-connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: mycluster-connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: mycluster-connect-status
+      CONNECT_REPLICATION_FACTOR: 3
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: ${SCHEMA_REGISTRY_URL}
+      CONNECT_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: ${BASIC_AUTH_CREDENTIALS_SOURCE}
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: ${SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO}
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+      # CLASSPATH required due to CC-2422
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-6.2.0.jar
+      # Connect worker
+      CONNECT_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_SASL_JAAS_CONFIG: ${SASL_JAAS_CONFIG}
+      CONNECT_SASL_MECHANISM: PLAIN
+      # Connect admin
+      CONNECT_ADMIN_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_ADMIN_SASL_JAAS_CONFIG: ${SASL_JAAS_CONFIG}
+      CONNECT_ADMIN_SASL_MECHANISM: PLAIN
+      # Connect producer
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_PRODUCER_SASL_JAAS_CONFIG: ${SASL_JAAS_CONFIG}
+      CONNECT_PRODUCER_SASL_MECHANISM: PLAIN
+      # Connect consumer
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SASL_SSL
+      CONNECT_CONSUMER_SASL_JAAS_CONFIG: ${SASL_JAAS_CONFIG}
+      CONNECT_CONSUMER_SASL_MECHANISM: PLAIN

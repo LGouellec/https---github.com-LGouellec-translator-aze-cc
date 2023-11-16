@@ -1,0 +1,8 @@
+.idea/
+logging.log
+**/logging.log
+*/target/
+**/*-origin.properties
+env-origin
+anonymize.sh
+deanonymize.sh
